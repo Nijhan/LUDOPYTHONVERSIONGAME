@@ -2,9 +2,9 @@ import pytest
 import builtins
 #builtins is the module that contains all the “built-in” functions, constants, and exceptions that you can use without importing anything.
 
-# -------------------------------------------------
+
 # Flexible import so it works in both structures
-# -------------------------------------------------
+
 try:
     # Case 1: utils inside ludo_game/
     from ludo_game.utils import input_utils
@@ -15,9 +15,9 @@ except ModuleNotFoundError:
 from ludo_game import players
 
 
-# -------------------------------
+
 # Fake DB class for testing
-# -------------------------------
+
 class FakeDB:
     """
     A very simple fake 'database' for testing.
@@ -43,9 +43,9 @@ class FakeDB:
         return self.data[username]
 
 
-# -------------------------------
+
 # Helper to simulate user inputs
-# -------------------------------
+
 def run_with_inputs(inputs, func, *args):
     """
     Replaces input() temporarily with our fake version.
@@ -66,9 +66,9 @@ def run_with_inputs(inputs, func, *args):
         builtins.input = real_input
 
 
-# -------------------------------
+
 # Tests
-# -------------------------------
+
 def test_validate_username_valid_and_invalid():
     """
     Test different usernames to make sure validation works.
@@ -125,9 +125,9 @@ def test_register_players_and_choose_colors():
 # import psycopg2
 # from ludo_game.db import RealDB
 
-# # -------------------------------
+
 # # Setup: Connect to a test database
-# # -------------------------------
+
 # @pytest.fixture(scope="module")
 # def real_db():
 #     """
@@ -160,9 +160,8 @@ def test_register_players_and_choose_colors():
 #     conn.close()
 
 
-# # -------------------------------
 # # Tests
-# # -------------------------------
+
 # def test_create_and_get_player(real_db):
 #     """Test inserting a new player and retrieving them."""
 #     player = real_db.get_or_create_player("eva")
