@@ -30,3 +30,4 @@ def test_check_winner_detects_end_position():
     assert check_winner(57) is True
     assert check_winner(58) is True
     assert check_winner(56) is False
+

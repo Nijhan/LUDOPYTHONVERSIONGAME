@@ -40,3 +40,4 @@ def test_database_integration_save_and_load(monkeypatch):
     loaded = database.load_player_stats(conn, test_name) if hasattr(database.load_player_stats, "__call__") else None
 
     assert loaded is not None, "Expected to load a record back from database after saving, but got None"
+    

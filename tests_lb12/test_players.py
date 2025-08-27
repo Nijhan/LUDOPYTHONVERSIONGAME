@@ -16,3 +16,4 @@ def test_register_player_creates_player_instance():
 def test_player_empty_name_raises_value_error():
     with pytest.raises(ValueError):
         register_player("   ")
+
