@@ -1,34 +1,24 @@
-from game_logic import GameLogic
-
-# Simple Player class
-class Player:
-    def __init__(self, name):
-        self.name = name
+from game_logic import GameLogic, Player
 
 def main():
-    # create 2 players
-    players = [Player("Najma"), Player("AI")]
+    # Two players
+    players = [Player("Najma"), Player("Adrian")]
 
-    # start game
+    # Initialize game
     game = GameLogic(players)
 
     winner = None
+    print("🎲 Ludo Demo 🎲 Track ends at 20 for quick play. Each player has 2 tokens.")
     while not winner:
         player = game.get_current_player()
-        
-        # roll dice
+        input(f"\n{player.name}'s turn → press ENTER to roll dice")
         roll = game.roll_dice()
+        print(f"{player.name} rolled: {roll}")
 
-        # move a token
         game.move_token(player, roll)
-
-        # show board state
         game.display_board()
 
-        # check for winner
         winner = game.check_winner(player)
-
-        # switch turn
         game.next_turn()
 
 if __name__ == "__main__":

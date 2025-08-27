@@ -1,6 +1,5 @@
-# utils/dice_utils.py
 import random
 
 def roll_dice():
-    """Return a random integer between 1 and 6 (like rolling a dice)."""
+    """Roll a 6-sided dice"""
     return random.randint(1, 6)
