@@ -1,0 +1,33 @@
+# Core database driver
+psycopg[binary,pool]   # PostgreSQL driver with binary & connection pooling support
+
+# ORM
+SQLAlchemy             # ORM for database models and queries
+
+# Database migrations
+alembic                # For handling schema migrations
+
+# Environment variable management
+python-dotenv          # Load .env files easily
+
+# Rich terminal output
+rich                   # Pretty-printing, tables, logs, etc.
+P4+2ygpUyL+sV7v
+export PIPENV_VENV_IN_PROJECT=1
+pipenv install
+pipienv install SQLALchemy
+pipenv shell
+pipenv install "psycopg[binary,pool]"
+#creating virtual environment
+#alembic
+alembic init alembic
+pipenv install "psycopg[binary,pool]" SQLAlchemy alembic python-dotenv
+#creating migrations 
+alembic revision --autogenerate -m"initialize tables"
+#adding table in migrations 
+alembic upgrade head
+#env stands for environmental viriables
+#pip install
+python3 -m pip install rich --break-system-packages
+#use rich
+pip install rich
