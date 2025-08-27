@@ -1,3 +1,24 @@
 sqlalchemy
 alembic
 psycopg2-binary
+
+
+sqlalchemy
+alembic
+psycopg2-binary
+
+# Database
+psycopg2-binary==2.9.9   # PostgreSQL adapter for Python
+
+# CLI Styling
+rich==13.7.0             # For styled console output (colors, tables, etc.)
+colorama==0.4.6          # Cross-platform text coloring support
+inquirer==3.1.4          # Interactive CLI prompts and menus
+
+# Testing
+pytest==8.2.0            # Unit testing framework
+pytest-cov==5.0.0        # Test coverage reporting
+
+# Utilities
+python-dotenv==1.0.1     # Load environment variables (e.g., DB credentials)
+
