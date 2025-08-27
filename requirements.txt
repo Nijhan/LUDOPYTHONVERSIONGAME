@@ -1,3 +1,8 @@
+
+sqlalchemy
+alembic
+psycopg2-binary
+
 # Database
 psycopg2-binary==2.9.9   # PostgreSQL adapter for Python
 
@@ -12,3 +17,4 @@ pytest-cov==5.0.0        # Test coverage reporting
 
 # Utilities
 python-dotenv==1.0.1     # Load environment variables (e.g., DB credentials)
+
