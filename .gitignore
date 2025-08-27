@@ -1,3 +1,14 @@
+# Virtual environments
+.venv/
+.venv-1/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
 # Database credentials and sensitive files
 alembic/pass.txt
 .vscode/settings.json
@@ -9,6 +20,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.pyc
+*.pyo
+*.pyd
 .Python
 build/
 develop-eggs/
@@ -26,27 +40,20 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# Database files
 Pipfile.lock
-
-# Database
+PIPFILE.lock
 *.db
 *.sqlite3
+ludo.db
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
@@ -54,6 +61,12 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
 
 # Logs
 *.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local

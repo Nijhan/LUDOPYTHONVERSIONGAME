@@ -4,11 +4,32 @@ from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 from typing import Generator, List, Optional, Dict, Any
 import json
+from sqlalchemy.engine import URL
+from dotenv import load_dotenv
+import os
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres.bxjmqkpdfuqrzpcevvrz:zSDUjdsAZT4xmwEh@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require"
+load_dotenv()
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Database credentials (cleaned up: no extra spaces)
+db_credentials = {
+    "drivername": "postgresql+psycopg2",
+    "host": "aws-1-eu-north-1.pooler.supabase.com",
+    "username": "postgres.uoouexfczqhdqjrvtsjn",
+    "password": "zSDUjdsAZT4xmwEh",
+    "port": 5432,
+    "database": "postgres"
+}
+
+# Build URL
+DATABASE_URL = URL.create(**db_credentials)
+
+# Engine
+engine = create_engine(DATABASE_URL, echo=True, future=True)
+
+# SessionLocal -> database session factory
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
+# Base class for ORM models
 Base = declarative_base()
 
 # Database session context manager
