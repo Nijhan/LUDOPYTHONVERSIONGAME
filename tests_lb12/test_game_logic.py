@@ -16,3 +16,8 @@ def test_move_token_adds_steps_correctly():
     start = 0
     assert move_token(start, 4) == 4
     assert move_token(5, 2) == 7
+def test_switch_turn_rotates_players():
+    players = ["P1", "P2", "P3"]
+    assert switch_turn(0, players) == 1
+    assert switch_turn(1, players) == 2
+    assert switch_turn(2, players) == 0
