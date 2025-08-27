@@ -12,15 +12,20 @@ def test_roll_dice_returns_valid_values():
         assert isinstance(value, int), f"Dice roll should be int, got {type(value)}"
         assert 1 <= value <= 6, f"Dice roll out of range: {value}"
 
+
 def test_move_token_adds_steps_correctly():
     start = 0
     assert move_token(start, 4) == 4
     assert move_token(5, 2) == 7
-    def test_switch_turn_rotates_players():
+
+
+def test_switch_turn_rotates_players():
     players = ["P1", "P2", "P3"]
     assert switch_turn(0, players) == 1
     assert switch_turn(1, players) == 2
     assert switch_turn(2, players) == 0
+
+
 def test_check_winner_detects_end_position():
     assert check_winner(57) is True
     assert check_winner(58) is True
