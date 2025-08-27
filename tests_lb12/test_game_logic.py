@@ -21,3 +21,7 @@ def test_switch_turn_rotates_players():
     assert switch_turn(0, players) == 1
     assert switch_turn(1, players) == 2
     assert switch_turn(2, players) == 0
+    def test_check_winner_detects_end_position():
+    assert check_winner(57) is True
+    assert check_winner(58) is True
+    assert check_winner(56) is False
