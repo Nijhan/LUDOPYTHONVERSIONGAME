@@ -1,25 +1,20 @@
-from game_logic import GameLogic, Player
+from ludo_game import players
+from database import DB  # real DB
 
 def main():
-    # Two players
-    players = [Player("Najma"), Player("Adrian")]
+    print("🎲 Welcome to Ludo!")
 
-    # Initialize game
-    game = GameLogic(players)
+    db = DB()  # real database
 
-    winner = None
-    print("🎲 Ludo Demo 🎲 Track ends at 20 for quick play. Each player has 2 tokens.")
-    while not winner:
-        player = game.get_current_player()
-        input(f"\n{player.name}'s turn → press ENTER to roll dice")
-        roll = game.roll_dice()
-        print(f"{player.name} rolled: {roll}")
+    # Register players
+    players_list = players.register_players(db)
 
-        game.move_token(player, roll)
-        game.display_board()
+    # Choose colors
+    players.choose_colors(players_list)
 
-        winner = game.check_winner(player)
-        game.next_turn()
+    print("\n✅ Players are ready to start!")
+    for p in players_list:
+        print(f"- {p.username} (Color: {p.color}) | Wins: {p.wins}, Losses: {p.losses}")
 
 if __name__ == "__main__":
     main()

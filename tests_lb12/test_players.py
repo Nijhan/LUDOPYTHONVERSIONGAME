@@ -1,19 +1,62 @@
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import pytest
-from players import Player, register_player
+import psycopg2
+from ludo_game.db import RealDB
 
 
-def test_register_player_creates_player_instance():
-    p = register_player("Ada")
-    assert isinstance(p, Player)
-    assert p.name == "Ada"
-    assert p.position == 0 or getattr(p, "token_position", 0) == 0
+# Setup: Connect to a test database
+
+@pytest.fixture(scope="module")
+def real_db():
+    """
+    Fixture to connect to a Postgres test database.
+    Make sure you have created:
+    database: ludo_test
+    user: your_postgres_user
+    password: your_postgres_password
+    host: localhost
+    """
+    db = RealDB(
+        dbname="postgres",
+        user="postgres.uoouexfczqhdqjrvtsjn",
+        password="zSDUjdsAZT4xmwEh",
+        host="aws-1-eu-north-1.pooler.supabase.com",
+    )
+    yield db
+
+    # Teardown: clear test data
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="postgres.uoouexfczqhdqjrvtsjn",
+        password="zSDUjdsAZT4xmwEh",
+        host="aws-1-eu-north-1.pooler.supabase.com",
+    )
+    cur = conn.cursor()
+    cur.execute("DELETE FROM players;")  # cleanup players table
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
-def test_player_empty_name_raises_value_error():
-    with pytest.raises(ValueError):
-        register_player("   ")
+# Tests
 
+def test_create_and_get_player(real_db):
+    """Test inserting a new player and retrieving them."""
+    player = real_db.get_or_create_player("eva")
+    assert player["username"] == "eva"
+    assert "id" in player
+
+    # Second call should not create a duplicate
+    player2 = real_db.get_or_create_player("eva")
+    assert player2["id"] == player["id"]
+
+
+def test_update_player_stats(real_db):
+    """Test updating wins/losses for a player."""
+    player = real_db.get_or_create_player("maina")
+
+    # Update wins + losses
+    real_db.update_player_stats(player["id"], wins=5, losses=2)
+
+    updated = real_db.get_or_create_player("maina")
+    assert updated["wins"] == 5
+    assert updated["losses"] == 2
