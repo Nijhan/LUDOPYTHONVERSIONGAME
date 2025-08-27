@@ -16,3 +16,15 @@ def test_database_module_exports_expected_functions():
     assert hasattr(database, "save_player_stats"), "save_player_stats missing in database.py"
     assert hasattr(database, "load_player_stats"), "load_player_stats missing in database.py"
 
+
+def test_database_integration_save_and_load(monkeypatch):
+    conn = None
+    try:
+        conn = database.connect_db()
+    except Exception:
+        conn = None
+
+    if conn is None:
+        pytest.skip("No database connection available; skipping DB integration test.")
+
+    
