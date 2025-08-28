@@ -1,4 +1,7 @@
 import sys,os
+#from rich.console import Console
+
+#console=Console()
 
 #pwd file
 print(__file__)
