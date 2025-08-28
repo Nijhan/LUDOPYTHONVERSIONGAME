@@ -1,74 +1,98 @@
-from sqlalchemy.orm import sessionmaker
-from alembic.app.db import engine, SessionLocal
-from alembic.app.models import Player, Game, GamePlayer
+import psycopg2
 
-class LudoDatabase:
-    def __init__(self):
-        self.session = SessionLocal()
-    
-    def create_player(self, name):
-        player = Player(name=name)
-        self.session.add(player)
-        self.session.commit()
-        return player
-    
-    def get_player(self, name):
-        return self.session.query(Player).filter(Player.name == name).first()
-    
-    def create_game(self, player_names):
-        game = Game()
-        self.session.add(game)
-        self.session.flush()
-        
-        colors = ["red", "blue", "green", "yellow"]
-        for i, name in enumerate(player_names):
-            player = self.get_player(name) or self.create_player(name)
-            game_player = GamePlayer(
-                game_id=game.id,
-                player_id=player.id,
-                color=colors[i],
-                player_order=i
+
+def connect_db(dbname, user, password, host="localhost", port=5432):
+    """Helper function to connect to PostgreSQL and ensure tables exist."""
+    conn = psycopg2.connect(
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
+    )
+    create_tables(conn)
+    return conn
+
+
+def create_tables(conn):
+    with conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS players (
+                id SERIAL PRIMARY KEY,
+                name TEXT UNIQUE,
+                token_position INTEGER DEFAULT 0,
+                tokens_finished INTEGER DEFAULT 0,
+                wins INTEGER DEFAULT 0,
+                losses INTEGER DEFAULT 0
             )
-            self.session.add(game_player)
-        
-        self.session.commit()
-        return game
-    
-    def save_game_state(self, game_id, current_turn, token_positions):
-        game = self.session.query(Game).get(game_id)
-        game.current_player_turn = current_turn
-        
-        for player_order, positions in token_positions.items():
-            game_player = self.session.query(GamePlayer).filter(
-                GamePlayer.game_id == game_id,
-                GamePlayer.player_order == player_order
-            ).first()
-            game_player.token_positions = positions
-        
-        self.session.commit()
-    
-    def finish_game(self, game_id, winner_player_order):
-        game = self.session.query(Game).get(game_id)
-        game.status = "finished"
-        
-        winner_game_player = self.session.query(GamePlayer).filter(
-            GamePlayer.game_id == game_id,
-            GamePlayer.player_order == winner_player_order
-        ).first()
-        
-        game.winner_id = winner_game_player.player_id
-        winner_game_player.is_finished = True
-        
-        # Update player stats
-        winner = self.session.query(Player).get(winner_game_player.player_id)
-        winner.games_won += 1
-        
-        # Update games_played for all players
-        for gp in game.game_players:
-            player = self.session.query(Player).get(gp.player_id)
-            player.games_played += 1
-        
-        self.session.commit()
-    
-    def close(self):
-        self.session.close()
+            """
+        )
+        conn.commit()
+
+
+def save_player_stats(conn, player):
+    with conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO players (name, token_position, tokens_finished, wins, losses)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (name) DO UPDATE SET
+                token_position = EXCLUDED.token_position,
+                tokens_finished = EXCLUDED.tokens_finished,
+                wins = EXCLUDED.wins,
+                losses = EXCLUDED.losses
+            """,
+            (
+                getattr(player, "name", None),
+                getattr(player, "token_position", 0),
+                getattr(player, "tokens_finished", 0),
+                getattr(player, "wins", 0),
+                getattr(player, "losses", 0),
+            ),
+        )
+        conn.commit()
+
+
+def load_player_stats(conn, name):
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT name, token_position, tokens_finished, wins, losses FROM players WHERE name = %s",
+        (name,),
+    )
+    row = cur.fetchone()
+    if row:
+        return type("Player", (), {
+            "name": row[0],
+            "token_position": row[1],
+            "tokens_finished": row[2],
+            "wins": row[3],
+            "losses": row[4],
+        })()
+    return None
+
+
+class RealDB:
+    def __init__(self, dbname, user, password, host="localhost", port=5432):
+        """Connect directly to PostgreSQL with given credentials."""
+        self.conn = connect_db(dbname, user, password, host, port)
+
+    def get_or_create_player(self, name):
+        player = load_player_stats(self.conn, name)
+        if player:
+            return player
+        # If not found, create new
+        player = type("Player", (), {
+            "name": name,
+            "token_position": 0,
+            "tokens_finished": 0,
+            "wins": 0,
+            "losses": 0,
+        })()
+        save_player_stats(self.conn, player)
+        return player
+
+    def update_player_stats(self, player):
+        save_player_stats(self.conn, player)

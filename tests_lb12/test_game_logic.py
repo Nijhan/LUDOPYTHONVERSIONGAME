@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pytest
-from game_logic import roll_dice, move_token, switch_turn, check_winner
+from game_logic import roll_dice, move_token, switch_turn, check_winner,GameLogic,Player
 
 
 def test_roll_dice_returns_valid_values():

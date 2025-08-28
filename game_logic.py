@@ -1,50 +1,39 @@
-from utils.dice_utils import roll_dice as roll_dice_util
-from utils.movement_utils import move_token as move_token_util
-
-TOKENS_PER_PLAYER = 2
-FINAL_POSITION = 20  # Short track for demo
+import random
 
 class Player:
-    def __init__(self, name):
+    def _init_(self, name):
         self.name = name
-        self.tokens = [-1] * TOKENS_PER_PLAYER  # All tokens start in Yard
+        self.position = 0
 
-    def has_won(self):
-        return all(pos >= FINAL_POSITION for pos in self.tokens)
+    def move(self, steps):
+        self.position += steps
 
 class GameLogic:
-    def __init__(self, players):
-        self.players = players
-        self.current_index = 0
+    @staticmethod
+    def roll_dice():
+        return random.randint(1, 6)
 
-    def get_current_player(self):
-        return self.players[self.current_index]
+    @staticmethod
+    def move_token(start, steps):
+        return start + steps
 
-    def roll_dice(self):
-        return roll_dice_util()
+    @staticmethod
+    def switch_turn(current_index, players):
+        return (current_index + 1) % len(players)
 
-    def move_token(self, player, roll):
-        for i, pos in enumerate(player.tokens):
-            if pos == -1 and roll == 6:
-                player.tokens[i] = 0
-                print(f"{player.name}'s token {i+1} entered the board!")
-                return
-            elif pos != -1:
-                player.tokens[i] = move_token_util(pos, roll)
-                print(f"{player.name}'s token {i+1} moved to {player.tokens[i]}")
-                return
-        print(f"{player.name} could not move any token.")
+    @staticmethod
+    def check_winner(position, end_position=57):
+        return position >= end_position
 
-    def display_board(self):
-        for player in self.players:
-            status = ", ".join(str(t) if t != -1 else "Yard" for t in player.tokens)
-            print(f"{player.name}: {status}")
+# Free functions for easier test access
+def roll_dice():
+    return GameLogic.roll_dice()
 
-    def check_winner(self, player):
-        if player.has_won():
-            print(f"\n🎉 {player.name} has won the game! 🎉")
-            return player
-        return None
+def move_token(start, steps):
+    return GameLogic.move_token(start, steps)
 
-    def next_turn(self):
-        self.current_index = (self.current_index + 1) % len(self.players)
+def switch_turn(current_index, players):
+    return GameLogic.switch_turn(current_index, players)
+
+def check_winner(position, end_position=57):
+    return GameLogic.check_winner(position, end_position)

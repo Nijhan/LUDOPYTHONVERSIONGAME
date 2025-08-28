@@ -1,6 +1,6 @@
 import pytest
 import psycopg2
-from ludo_game.db import RealDB
+from database import RealDB
 
 
 # Setup: Connect to a test database

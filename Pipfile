@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
+psycopg = {extras = ["pool", "binary"], version = "*"}
+alembic = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

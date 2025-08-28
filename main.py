@@ -1,4 +1,4 @@
-from ludo_game import players
+from players import *
 from database import DB  # real DB
 
 def main():

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
-from app.db import Base
+from ..db import Base
 
 class GamePlayer(Base):
     __tablename__ = "game_players"
