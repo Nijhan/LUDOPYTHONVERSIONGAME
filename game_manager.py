@@ -1,7 +1,8 @@
 import random
 from typing import List, Dict, Optional
-from game_logic import Player
+from players import Player
 from database import RealDB
+from sqlite_db import SQLiteDB
 
 class GameManager:
     def __init__(self, db):
@@ -17,7 +18,7 @@ class GameManager:
         """Initialize game state with players and their tokens"""
         self.players = players
         for player in players:
-            self.token_positions[player.name] = [0, 0, 0, 0]  # 4 tokens per player
+            self.token_positions[player.username] = [0, 0, 0, 0]  # 4 tokens per player
             
     def roll_dice(self) -> int:
         """Roll a 6-sided dice"""
@@ -25,19 +26,19 @@ class GameManager:
     
     def get_available_tokens(self, player: Player) -> List[int]:
         """Get indices of tokens that can be moved (not finished)"""
-        positions = self.token_positions[player.name]
+        positions = self.token_positions[player.username]
         return [i for i, pos in enumerate(positions) if pos < 57]  # 57 is final position
     
     def move_token(self, player: Player, token_index: int, steps: int) -> bool:
         """Move a token and return True if it reaches exactly the finish"""
-        current_pos = self.token_positions[player.name][token_index]
+        current_pos = self.token_positions[player.username][token_index]
         new_pos = current_pos + steps
         
         # Handle exact finish requirement - can only move if it lands exactly on 57 or less
         if new_pos > 57:
             return False  # Cannot move beyond finish
             
-        self.token_positions[player.name][token_index] = new_pos
+        self.token_positions[player.username][token_index] = new_pos
         
         # Check if token reached finish exactly
         if new_pos == 57:
@@ -46,7 +47,7 @@ class GameManager:
     
     def check_winner(self, player: Player) -> bool:
         """Check if a player has won (all 4 tokens at finish)"""
-        positions = self.token_positions[player.name]
+        positions = self.token_positions[player.username]
         return all(pos == 57 for pos in positions)
     
     def next_turn(self, got_six: bool = False) -> Player:
@@ -61,7 +62,7 @@ class GameManager:
             return False
             
         current_player = self.players[self.current_player_index]
-        print(f"\n🎲 {current_player.name}'s turn!")
+        print(f"\n🎲 {current_player.username}'s turn!")
         
         # Roll dice
         dice_roll = self.roll_dice()
@@ -70,15 +71,15 @@ class GameManager:
         # Check if player can enter tokens
         available_tokens = self.get_available_tokens(current_player)
         
-        if dice_roll == 6 and any(pos == 0 for pos in self.token_positions[current_player.name]):
+        if dice_roll == 6 and any(pos == 0 for pos in self.token_positions[current_player.username]):
             # Player rolled 6 and has tokens at home - must enter one
             print("🎉 You rolled a 6! You can enter a token to the board.")
             token_to_move = 0  # Enter first available token
-            for i, pos in enumerate(self.token_positions[current_player.name]):
+            for i, pos in enumerate(self.token_positions[current_player.username]):
                 if pos == 0:
                     token_to_move = i
                     break
-            self.token_positions[current_player.name][token_to_move] = 1  # Start at position 1
+            self.token_positions[current_player.username][token_to_move] = 1  # Start at position 1
             print(f"✅ Token {token_to_move + 1} entered the board!")
             self.next_turn(got_six=True)  # Extra turn for rolling 6
             return True
@@ -92,13 +93,13 @@ class GameManager:
             moved = self.move_token(current_player, token_to_move, dice_roll)
             
             if moved:
-                print(f"✅ Moved token {token_to_move + 1} to position {self.token_positions[current_player.name][token_to_move]}")
+                print(f"✅ Moved token {token_to_move + 1} to position {self.token_positions[current_player.username][token_to_move]}")
                 
                 # Check if this move won the game
                 if self.check_winner(current_player):
                     self.game_over = True
                     self.winner = current_player
-                    print(f"🏆 {current_player.name} WINS THE GAME! 🏆")
+                    print(f"🏆 {current_player.username} WINS THE GAME! 🏆")
                     return False
             else:
                 print(f"❌ Cannot move token {token_to_move + 1} - would exceed finish")
@@ -121,6 +122,6 @@ class GameManager:
         """Display current board state"""
         print("\n📊 Current Board:")
         for player in self.players:
-            positions = self.token_positions[player.name]
+            positions = self.token_positions[player.username]
             token_str = ", ".join([f"T{i+1}:{pos}" for i, pos in enumerate(positions)])
-            print(f"  {player.name}: {token_str}")
+            print(f"  {player.username} ({player.color}): {token_str}")
