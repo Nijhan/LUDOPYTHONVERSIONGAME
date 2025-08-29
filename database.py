@@ -15,62 +15,32 @@ def connect_db(dbname, user, password, host="localhost", port=5432):
 
 
 def create_tables(conn):
-    with conn:
-        cur = conn.cursor()
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS players (
-                id SERIAL PRIMARY KEY,
-                name TEXT UNIQUE,
-                token_position INTEGER DEFAULT 0,
-                tokens_finished INTEGER DEFAULT 0,
-                wins INTEGER DEFAULT 0,
-                losses INTEGER DEFAULT 0
-            )
-            """
-        )
-        conn.commit()
+    # Tables are already created by Alembic migrations
+    # This function is kept for backward compatibility but does nothing
+    # since tables are managed by Alembic
+    pass
 
 
 def save_player_stats(conn, player):
-    with conn:
-        cur = conn.cursor()
-        cur.execute(
-            """
-            INSERT INTO players (name, token_position, tokens_finished, wins, losses)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (name) DO UPDATE SET
-                token_position = EXCLUDED.token_position,
-                tokens_finished = EXCLUDED.tokens_finished,
-                wins = EXCLUDED.wins,
-                losses = EXCLUDED.losses
-            """,
-            (
-                getattr(player, "name", None),
-                getattr(player, "token_position", 0),
-                getattr(player, "tokens_finished", 0),
-                getattr(player, "wins", 0),
-                getattr(player, "losses", 0),
-            ),
-        )
-        conn.commit()
+    # This function is not used in the new schema
+    # Player stats are managed through the game_players and moves tables
+    pass
 
 
-def load_player_stats(conn, name):
+def load_player_stats(conn, username):
     cur = conn.cursor()
     cur.execute(
-        "SELECT name, token_position, tokens_finished, wins, losses FROM players WHERE name = %s",
-        (name,),
+        "SELECT id, username, email, created_at FROM players WHERE username = %s",
+        (username,),
     )
     row = cur.fetchone()
     if row:
-        return type("Player", (), {
-            "name": row[0],
-            "token_position": row[1],
-            "tokens_finished": row[2],
-            "wins": row[3],
-            "losses": row[4],
-        })()
+        return {
+            "id": row[0],
+            "username": row[1],
+            "email": row[2],
+            "created_at": row[3]
+        }
     return None
 
 
@@ -79,20 +49,26 @@ class RealDB:
         """Connect directly to PostgreSQL with given credentials."""
         self.conn = connect_db(dbname, user, password, host, port)
 
-    def get_or_create_player(self, name):
-        player = load_player_stats(self.conn, name)
+    def get_or_create_player(self, username):
+        player = load_player_stats(self.conn, username)
         if player:
             return player
-        # If not found, create new
-        player = type("Player", (), {
-            "name": name,
-            "token_position": 0,
-            "tokens_finished": 0,
-            "wins": 0,
-            "losses": 0,
-        })()
-        save_player_stats(self.conn, player)
-        return player
+        # If not found, create new player
+        cur = self.conn.cursor()
+        cur.execute(
+            "INSERT INTO players (username, email) VALUES (%s, %s) RETURNING id, username, email, created_at",
+            (username, f"{username}@example.com")
+        )
+        row = cur.fetchone()
+        self.conn.commit()
+        return {
+            "id": row[0],
+            "username": row[1],
+            "email": row[2],
+            "created_at": row[3]
+        }
 
     def update_player_stats(self, player):
-        save_player_stats(self.conn, player)
+        # Player stats are updated through game-specific tables
+        # This method is kept for compatibility but does nothing
+        pass
