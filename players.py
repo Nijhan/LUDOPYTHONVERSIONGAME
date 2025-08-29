@@ -1,4 +1,4 @@
-from ludo_game.utils.input_utils import (
+from utils.input_utils import (
     prompt_int,
     prompt_username,
     prompt_choice,
@@ -32,12 +32,21 @@ def register_players(db, min_players=2, max_players=4):
         # DB lookup (create if not exists)
         row = db.get_or_create_player(username)
 
-        player = Player(
-            username=row["username"],
-            player_id=row["id"],
-            wins=row.get("wins", 0),
-            losses=row.get("losses", 0),
-        )
+        # Handle different return types from database classes
+        if hasattr(row, 'name'):  # RealDB returns Player object
+            player = Player(
+                username=row.name,
+                player_id=getattr(row, 'id', None),
+                wins=getattr(row, 'wins', 0),
+                losses=getattr(row, 'losses', 0),
+            )
+        else:  # SQLiteDB returns dictionary
+            player = Player(
+                username=row["name"],
+                player_id=row.get("id", None),
+                wins=row.get("wins", 0),
+                losses=row.get("losses", 0),
+            )
         players.append(player)
 
     return players
