@@ -93,14 +93,3 @@ def prompt_yes_no(prompt):
         elif value in ['n', 'no']:
             return False
         print("⚠️ Please enter 'y' for yes or 'n' for no.")
-
-
-def get_valid_input(prompt, validation_func, error_message):
-    """
-    Get input from user and validate it using the provided validation function.
-    """
-    while True:
-        user_input = input(prompt).strip()
-        if validation_func(user_input):
-            return user_input
-        print(f"⚠️ {error_message}")

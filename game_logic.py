@@ -1,7 +1,7 @@
 import random
 
 class Player:
-    def __init__(self, name):
+    def _init_(self, name):
         self.name = name
         self.position = 0
 

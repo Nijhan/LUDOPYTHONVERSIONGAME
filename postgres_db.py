@@ -40,20 +40,12 @@ class PostgresDB:
             """)
             
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS game_players (
+                CREATE TABLE IF NOT EXISTS tokens (
                     id SERIAL PRIMARY KEY,
                     game_id INTEGER REFERENCES games(id),
                     player_id INTEGER REFERENCES players(id),
-                    color VARCHAR(20),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS tokens (
-                    id SERIAL PRIMARY KEY,
-                    game_player_id INTEGER REFERENCES game_players(id),
-                    position INTEGER DEFAULT 0,
+                    token_number INTEGER,
+                    position VARCHAR(10) DEFAULT 'Yard',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -65,7 +57,8 @@ class PostgresDB:
                     player_id INTEGER REFERENCES players(id),
                     dice_roll INTEGER,
                     token_id INTEGER REFERENCES tokens(id),
-                    new_position INTEGER,
+                    from_position VARCHAR(10),
+                    to_position VARCHAR(10),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -107,8 +100,8 @@ class PostgresDB:
         with self.connection.cursor() as cursor:
             for i in range(num_tokens):
                 cursor.execute(
-                    "INSERT INTO tokens (game_player_id, position) VALUES (%s, %s) RETURNING id",
-                    (game_player_id, 0)
+                    "INSERT INTO tokens (game_player_id, position, is_home, is_finished) VALUES (%s, %s, %s, %s) RETURNING id",
+                    (game_player_id, 0, True, False)
                 )
                 token_ids.append(cursor.fetchone()[0])
         return token_ids
@@ -117,16 +110,18 @@ class PostgresDB:
         """Record a move in the database"""
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO moves (game_id, player_id, token_id, dice_roll, new_position) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO moves (game_id, player_id, token_id, dice_value, new_position) VALUES (%s, %s, %s, %s, %s)",
                 (game_id, player_id, token_id, dice_roll, new_position)
             )
     
     def update_token_position(self, token_id, new_position):
         """Update token position in database"""
         with self.connection.cursor() as cursor:
+            is_home = new_position == 0
+            is_finished = new_position >= 20
             cursor.execute(
-                "UPDATE tokens SET position = %s WHERE id = %s",
-                (new_position, token_id)
+                "UPDATE tokens SET position = %s, is_home = %s, is_finished = %s WHERE id = %s",
+                (new_position, is_home, is_finished, token_id)
             )
     
     def create_game_player(self, game_id, player_id, color):
@@ -170,7 +165,7 @@ class PostgresDB:
                 
             # Get tokens for this player in the active game
             cursor.execute("""
-                SELECT id, position
+                SELECT id, position, is_home, is_finished
                 FROM tokens
                 WHERE game_player_id = %s
                 ORDER BY id
