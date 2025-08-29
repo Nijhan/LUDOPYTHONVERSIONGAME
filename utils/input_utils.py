@@ -80,3 +80,16 @@ def prompt_choice(prompt, choices):
             if value == choice.lower():
                 return choice
         print(f"⚠️ Invalid choice. Pick from: {choices_str}")
+
+
+def prompt_yes_no(prompt):
+    """
+    Ask the user for a yes/no response.
+    """
+    while True:
+        value = input(f"{prompt} (y/n): ").strip().lower()
+        if value in ['y', 'yes']:
+            return True
+        elif value in ['n', 'no']:
+            return False
+        print("⚠️ Please enter 'y' for yes or 'n' for no.")
