@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from players import *
 from sqlite_db import SQLiteDB  # SQLite DB alternative
 from database import RealDB  # PostgreSQL DB alternative
+from game_manager import GameManager
 
 def main():
     print("🎲 Welcome to Ludo!")
@@ -39,6 +40,26 @@ def main():
     print("\n✅ Players are ready to start!")
     for p in players_list:
         print(f"- {p.username} (Color: {p.color}) | Wins: {p.wins}, Losses: {p.losses}")
+
+    # Start the game
+    print("\n🎮 Starting the game...")
+    game_manager = GameManager(db)
+    game_manager.setup_game(players_list)
+    game_manager.display_board()
+
+    # Main game loop
+    while True:
+        continue_game = game_manager.play_turn()
+        if not continue_game:
+            break
+            
+        # Show board after each turn
+        game_manager.display_board()
+        
+        # Pause for readability
+        input("\nPress Enter to continue to next turn...")
+
+    print("\n🎉 Game Over! Thanks for playing!")
 
 if __name__ == "__main__":
     main()
