@@ -1,0 +1,1 @@
+# ludo_game/app/__init__.py
