@@ -144,3 +144,38 @@ class PostgresDB:
             # Update stats for all players
             for player_id in all_player_ids:
                 self.update_player_stats(player_id, won=(player_id == winner_id))
+
+    def get_player_active_game_tokens(self, player_id):
+        """Get tokens and their positions for a player in an active game"""
+        with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Find active game for the player
+            cursor.execute("""
+                SELECT g.id as game_id, gp.id as game_player_id, gp.color
+                FROM games g
+                JOIN game_players gp ON g.id = gp.game_id
+                WHERE gp.player_id = %s AND g.status = 'active'
+                ORDER BY g.created_at DESC
+                LIMIT 1
+            """, (player_id,))
+            
+            active_game = cursor.fetchone()
+            
+            if not active_game:
+                return None
+                
+            # Get tokens for this player in the active game
+            cursor.execute("""
+                SELECT id, position, is_home, is_finished
+                FROM tokens
+                WHERE game_player_id = %s
+                ORDER BY id
+            """, (active_game['game_player_id'],))
+            
+            tokens = cursor.fetchall()
+            
+            return {
+                'game_id': active_game['game_id'],
+                'game_player_id': active_game['game_player_id'],
+                'color': active_game['color'],
+                'tokens': [dict(token) for token in tokens]
+            }

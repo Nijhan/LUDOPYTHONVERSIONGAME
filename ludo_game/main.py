@@ -15,14 +15,49 @@ def main():
     players.choose_colors(players_list)
     ui.show_players(players_list)
 
-    # Create game in database
-    game_id = db.create_game(len(players_list))
+    # Check if any player has an active game to resume
+    resuming_game = False
+    resuming_player = None
+    resuming_game_id = None
     
-    # Create game_players and tokens for each player
     for p in players_list:
-        game_player_id = db.create_game_player(game_id, p.id, p.color)
-        token_ids = db.create_tokens(game_player_id, 2)
-        p.tokens = [{"pos": 0, "color": p.color, "id": token_ids[i]} for i in range(2)]
+        if hasattr(p, 'active_game_data') and p.active_game_data:
+            resuming_game = True
+            resuming_player = p
+            resuming_game_id = p.active_game_data['game_id']
+            print(f"🎮 Resuming game {resuming_game_id} for {p.username}")
+            break
+    
+    if resuming_game:
+        # Use existing game and tokens
+        game_id = resuming_game_id
+        
+        # Load tokens for all players from the existing game
+        for p in players_list:
+            if hasattr(p, 'active_game_data') and p.active_game_data:
+                # This player has active game data, use their tokens
+                game_data = p.active_game_data
+                p.tokens = []
+                for token in game_data['tokens']:
+                    p.tokens.append({
+                        "pos": int(token['position']),
+                        "color": game_data['color'],
+                        "id": token['id']
+                    })
+            else:
+                # This player is joining an existing game, create new tokens for them
+                game_player_id = db.create_game_player(game_id, p.id, p.color)
+                token_ids = db.create_tokens(game_player_id, 2)
+                p.tokens = [{"pos": 0, "color": p.color, "id": token_ids[i]} for i in range(2)]
+    else:
+        # Create new game
+        game_id = db.create_game(len(players_list))
+        
+        # Create game_players and tokens for each player
+        for p in players_list:
+            game_player_id = db.create_game_player(game_id, p.id, p.color)
+            token_ids = db.create_tokens(game_player_id, 2)
+            p.tokens = [{"pos": 0, "color": p.color, "id": token_ids[i]} for i in range(2)]
 
     playing = True
     turn_index = 0
