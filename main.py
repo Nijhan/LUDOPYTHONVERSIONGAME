@@ -1,14 +1,12 @@
 from game_logic import Player
 from game_manager import GameManager
-from sqlite_db import SQLiteDB
 
 def main():
     # Two players
     players = [Player("Najma"), Player("Adrian")]
 
-    # Initialize game with SQLite database
-    db = SQLiteDB()
-    game = GameManager(db)
+    # Initialize game without database (in-memory only)
+    game = GameManager(None)
     game.setup_game(players)
 
     print("🎲 Ludo Demo 🎲 Track ends at 57 for standard play. Each player has 4 tokens.")
